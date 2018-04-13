@@ -338,10 +338,11 @@ public abstract class AbstractGitSCMSource extends SCMSource {
             listener.getLogger().println("Setting " + remoteName + " to " + getRemote());
             client.setRemoteUrl(remoteName, getRemote());
             listener.getLogger().println((prune ? "Fetching & pruning " : "Fetching ") + remoteName + "...");
-            FetchCommand fetch = client.fetch_();
-            if (prune) {
-                fetch = fetch.prune();
-            }
+            FetchCommand fetch = client.fetch_()
+                    .prune(prune)
+                    .shallow(true)
+                    .depth(2)
+                    .tags(context.wantTags());
             URIish remoteURI = null;
             try {
                 remoteURI = new URIish(remoteName);
