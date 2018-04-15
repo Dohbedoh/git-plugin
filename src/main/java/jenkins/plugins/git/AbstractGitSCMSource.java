@@ -59,6 +59,7 @@ import hudson.security.ACL;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -316,6 +317,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
     private <T, C extends GitSCMSourceContext<C, R>, R extends GitSCMSourceRequest> T doRetrieve(Retriever<T> retriever,
                                                                                                  @NonNull C context,
                                                                                                  @NonNull TaskListener listener,
+                                                                                                 boolean headsOnly,
                                                                                                  boolean prune)
             throws IOException, InterruptedException {
         String cacheEntry = getCacheEntry();
@@ -338,22 +340,32 @@ public abstract class AbstractGitSCMSource extends SCMSource {
             listener.getLogger().println("Setting " + remoteName + " to " + getRemote());
             client.setRemoteUrl(remoteName, getRemote());
             listener.getLogger().println((prune ? "Fetching & pruning " : "Fetching ") + remoteName + "...");
-            FetchCommand fetch = client.fetch_()
-                    .prune(prune)
-                    .shallow(true)
-                    .depth(2)
-                    .tags(context.wantTags());
             URIish remoteURI = null;
             try {
                 remoteURI = new URIish(remoteName);
             } catch (URISyntaxException ex) {
                 listener.getLogger().println("URI syntax exception for '" + remoteName + "' " + ex);
             }
-            fetch.from(remoteURI, context.asRefSpecs()).execute();
+            client.fetch_()
+                    .from(remoteURI, context.asRefSpecs())
+                    .prune(prune)
+                    .shallow(headsOnly)
+                    .depth(1)
+                    .tags(context.wantTags())
+                    .execute();
             return retriever.run(client, remoteName);
         } finally {
             cacheLock.unlock();
         }
+    }
+
+    @NonNull
+    private <T, C extends GitSCMSourceContext<C, R>, R extends GitSCMSourceRequest> T doRetrieve(Retriever<T> retriever,
+                                                                                                 @NonNull C context,
+                                                                                                 @NonNull TaskListener listener,
+                                                                                                 boolean prune)
+            throws IOException, InterruptedException {
+        return doRetrieve(retriever, context, listener, false, prune);
     }
 
     /**
@@ -411,7 +423,9 @@ public abstract class AbstractGitSCMSource extends SCMSource {
                               }
                           },
                 context,
-                listener, /* we don't prune remotes here, as we just want one head's revision */false);
+                listener,
+                true,
+                /* we don't prune remotes here, as we just want one head's revision */false);
     }
 
     /**
@@ -753,7 +767,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
                 }
                 listener.getLogger().format("Processed %d tags%n", count);
             }
-        }, context, listener, true);
+        }, context, listener, true, true);
     }
 
     /**
