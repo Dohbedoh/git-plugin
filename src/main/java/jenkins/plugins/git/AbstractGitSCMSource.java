@@ -349,7 +349,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
             client.fetch_()
                     .from(remoteURI, context.asRefSpecs())
                     .prune(prune)
-                    .shallow(headsOnly)
+                    .shallow(!context.wantChangeRequests())
                     .depth(1)
                     .tags(context.wantTags())
                     .execute();
@@ -846,6 +846,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
                 tagName = revision;
                 context.wantBranches(false);
                 context.wantTags(true);
+                context.wantChangeRequests(false);
                 context.withoutRefSpecs();
                 break;
             }
@@ -900,6 +901,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
             tagName = name;
             context.wantBranches(false);
             context.wantTags(true);
+            context.wantChangeRequests(false);
             context.withoutRefSpecs();
         }
         if (fullHashMatch != null) {
@@ -918,6 +920,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
                     tagName = StringUtils.removeStart(name, Constants.R_TAGS);
                     context.wantBranches(false);
                     context.wantTags(true);
+                    context.wantChangeRequests(true);
                     context.withoutRefSpecs();
                 }
             }
@@ -959,6 +962,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
         context.wantTags(true);
         context.wantBranches(true);
 
+        context.wantChangeRequests(true);
         return doRetrieve(new Retriever<SCMRevision>() {
                               @Override
                               public SCMRevision run(GitClient client, String remoteName) throws IOException, InterruptedException {

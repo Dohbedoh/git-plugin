@@ -71,6 +71,10 @@ public class GitSCMSourceContext<C extends GitSCMSourceContext<C, R>, R extends 
      */
     private Set<RefNameMapping> refNameMappings;
     /**
+     * {@code true} if the {@link GitSCMSourceRequest} will need information about revisions.
+     */
+    private boolean wantChangeRequests;
+    /**
      * The name of the {@link GitTool} to use or {@code null} to use the default.
      */
     @CheckForNull
@@ -134,6 +138,15 @@ public class GitSCMSourceContext<C extends GitSCMSourceContext<C, R>, R extends 
         } else {
             return Collections.unmodifiableSet(refNameMappings);
         }
+    }
+
+    /**
+     * Returns {@code true} if the {@link GitSCMSourceRequest} will need information about revisions.
+     *
+     * @return {@code true} if the {@link GitSCMSourceRequest} will need information about revisions.
+     */
+    public final boolean wantChangeRequests() {
+        return wantChangeRequests;
     }
 
     /**
@@ -219,6 +232,20 @@ public class GitSCMSourceContext<C extends GitSCMSourceContext<C, R>, R extends 
             refNameMappings = new TreeSet<>();
         }
         refNameMappings.add(other);
+        return (C) this;
+    }
+
+    /**
+     * Adds a requirement for tag details to any {@link GitSCMSourceRequest} for this context.
+     *
+     * @param include {@code true} to add the requirement or {@code false} to leave the requirement as is (makes
+     *                simpler with method chaining)
+     * @return {@code this} for method chaining.
+     */
+    @SuppressWarnings("unchecked")
+    @NonNull
+    public C wantChangeRequests(boolean include) {
+        wantChangeRequests = wantChangeRequests || include;
         return (C) this;
     }
 
