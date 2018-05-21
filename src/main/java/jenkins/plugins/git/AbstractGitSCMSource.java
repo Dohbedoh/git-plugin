@@ -349,7 +349,7 @@ public abstract class AbstractGitSCMSource extends SCMSource {
             client.fetch_()
                     .from(remoteURI, context.asRefSpecs())
                     .prune(prune)
-                    .shallow(!context.wantChangeRequests())
+                    .shallow(headsOnly || !context.wantChangeRequests())
                     .depth(1)
                     .tags(context.wantTags())
                     .execute();
@@ -961,7 +961,6 @@ public abstract class AbstractGitSCMSource extends SCMSource {
                         + "Pulling heads to local for deep search...%n", revision);
         context.wantTags(true);
         context.wantBranches(true);
-
         context.wantChangeRequests(true);
         return doRetrieve(new Retriever<SCMRevision>() {
                               @Override
