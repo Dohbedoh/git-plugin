@@ -50,6 +50,7 @@ import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
+import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.plugins.git.GitHooksConfiguration;
 import jenkins.plugins.git.GitSCMMatrixUtil;
 import jenkins.plugins.git.GitToolChooser;
@@ -1134,8 +1135,8 @@ public class GitSCM extends GitSCMBackwardCompatibility {
             candidates = GitSCMMatrixUtil.populateCandidatesFromRootBuild((AbstractBuild) build, this);
         }
 
-        // parameter forcing the commit ID to build
-        if (candidates.isEmpty() ) {
+        // Use parameter forcing the commit ID to build only if not using the SpecificRevisionBuildChooser
+        if (!(getBuildChooser() instanceof AbstractGitSCMSource.SpecificRevisionBuildChooser) && candidates.isEmpty() ) {
             final RevisionParameterAction rpa = build.getAction(RevisionParameterAction.class);
             if (rpa != null) {
                 // in case the checkout is due to a commit notification on a
