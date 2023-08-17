@@ -1,0 +1,6 @@
+security:
+  apiTokenProperty:
+    apiTokens:
+    - hash: "d92dbba125121c3d3e6f8022548741e5bd42090274975a57dcd1ddde8483e5fa"
+      name: "my-token"
+      uuid: "59852856-dc03-4f60-acd2-2b4073c9d533"

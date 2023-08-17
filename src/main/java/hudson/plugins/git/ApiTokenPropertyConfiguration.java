@@ -13,6 +13,8 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -30,7 +32,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 @Extension
 @Restricted(NoExternalUse.class)
 @Symbol("apiTokenProperty")
@@ -43,6 +44,7 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
     @GuardedBy("this")
     private final List<HashedApiToken> apiTokens;
 
+    @DataBoundConstructor
     public ApiTokenPropertyConfiguration() {
         this.apiTokens = new ArrayList<>();
     }
@@ -122,6 +124,12 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
         return Collections.unmodifiableList(new ArrayList<>(this.apiTokens));
     }
 
+    @DataBoundSetter
+    public synchronized void setApiTokens(List<HashedApiToken> apiTokens) {
+        this.apiTokens.clear();
+        this.apiTokens.addAll(apiTokens);
+    }
+
     public boolean isValidApiToken(String plainApiToken) {
         if (plainApiToken == null || plainApiToken.isBlank()) {
             return false;
@@ -135,6 +143,7 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
         return this.apiTokens.stream().anyMatch(apiToken -> apiToken.match(hash));
     }
 
+    @Symbol("apiToken")
     public static class HashedApiToken implements Serializable {
 
         private static final long serialVersionUID = 1L;
@@ -149,7 +158,8 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
             this.hash = hash;
         }
 
-        private HashedApiToken(String uuid, String name, String hash) {
+        @DataBoundConstructor
+        public HashedApiToken(String uuid, String name, String hash) {
             this.uuid = uuid;
             this.name = name;
             this.hash = hash;
